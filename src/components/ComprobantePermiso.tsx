@@ -9,7 +9,6 @@ interface Props {
 export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => {
   
   const handleImprimir = () => {
-    // Creamos un iframe oculto para procesar la impresión de forma aislada y limpia
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
@@ -28,55 +27,131 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
           <head>
             <meta charset="utf-8" />
             <title>Comprobante - Folio #${solicitud.id}</title>
-            <script src="https://cdn.tailwindcss.com"></script>
             <style>
               @page {
                 size: letter portrait;
-                margin: 8mm;
+                margin: 6mm;
               }
               body {
-                font-family: ui-sans-serif, system-ui, sans-serif;
+                font-family: Arial, sans-serif;
                 background: #ffffff;
                 color: #111827;
                 margin: 0;
                 padding: 0;
               }
+              .caja-comprobante {
+                height: 48%;
+                border: 1.5px solid #111827;
+                padding: 12px;
+                border-radius: 6px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                background: #fff;
+                box-sizing: border-box;
+              }
+              .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-bottom: 2px solid #111827;
+                padding-bottom: 6px;
+              }
+              .titulo-seccion {
+                font-size: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                margin: 0;
+                color: #111827;
+              }
+              .sub-titulo {
+                font-size: 9px;
+                color: #4b5563;
+                margin: 2px 0 0 0;
+              }
+              .badge {
+                background: #111827;
+                color: #ffffff;
+                padding: 3px 8px;
+                font-size: 8px;
+                font-weight: bold;
+                text-transform: uppercase;
+                border-radius: 3px;
+              }
+              .grid-2 {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+                margin-bottom: 4px;
+              }
+              .grid-4 {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 4px;
+              }
+              .grid-3 {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                text-align: center;
+                font-size: 9px;
+                color: #475569;
+                padding-top: 2px;
+              }
+              .caja-datos {
+                border: 1px solid #cbd5e1;
+                background: #f8fafc;
+                padding: 6px 8px;
+                border-radius: 4px;
+                font-size: 9px;
+              }
+              .label {
+                color: #64748b;
+                font-size: 8px;
+                text-transform: uppercase;
+                font-weight: bold;
+              }
+              .valor {
+                font-weight: 600;
+                color: #1e293b;
+              }
             </style>
           </head>
           <body>
-            <div style="display: flex; flex-direction: column; justify-content: space-between; height: 260mm; box-sizing: border-box; padding: 4mm;">
+            <div style="display: flex; flex-direction: column; justify-content: space-between; height: 268mm; box-sizing: border-box;">
               
               <!-- ORIGINAL -->
-              <div style="height: 48%; border: 1.5px solid #111827; padding: 14px; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; background: #fff;">
-                <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #111827; padding-bottom: 8px;">
+              <div class="caja-comprobante">
+                <div class="header">
                   <div>
-                    <h1 style="font-size: 13px; font-weight: bold; text-transform: uppercase; margin: 0; color: #111827;">Centro Odontológico Sindicato Nº 1</h1>
-                    <p style="font-size: 9px; color: #4b5563; margin: 2px 0 0 0;">Codelco Chile - Calama</p>
+                    <h1 class="titulo-seccion">Centro Odontológico Sindicato Nº 1</h1>
+                    <p class="sub-titulo">Codelco Chile - Calama</p>
                   </div>
                   <div style="text-align: right;">
-                    <span style="background: #111827; color: #ffffff; padding: 3px 8px; font-size: 8px; font-weight: bold; text-transform: uppercase;">ORIGINAL - CONTROL SINDICATO</span>
-                    <p style="font-size: 9px; color: #4b5563; margin: 3px 0 0 0;"><strong>Folio ID:</strong> #${solicitud.id}</p>
+                    <span class="badge">ORIGINAL - CONTROL SINDICATO</span>
+                    <p class="sub-titulo"><strong>Folio ID:</strong> #${solicitud.id}</p>
                   </div>
                 </div>
 
-                <h2 style="text-align: center; font-size: 12px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 4px 0;">Solicitud de Permiso</h2>
+                <h2 style="text-align: center; font-size: 11px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin: 2px 0;">Solicitud de Permiso</h2>
 
-                <div style="border: 1px solid #cbd5e1; background: #f8fafc; padding: 8px; border-radius: 4px; font-size: 10px;">
-                  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 6px;">
-                    <div><strong style="color: #64748b; font-size: 8px; text-transform: block;">TRABAJADOR:</strong><br/>${solicitud.nombreTrabajador}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">RUT:</strong><br/>${solicitud.rut}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">JEFE SECCIÓN:</strong><br/>${solicitud.cargo || 'No especificado'}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">MOTIVO:</strong><br/>${solicitud.motivo}</div>
+                <div class="caja-datos">
+                  <div class="grid-2">
+                    <div><span class="label">Trabajador:</span><br/><span class="valor">${solicitud.nombreTrabajador}</span></div>
+                    <div><span class="label">RUT:</span><br/><span class="valor">${solicitud.rut}</span></div>
+                    <div><span class="label">Jefe Sección:</span><br/><span class="valor" style="color: #4338ca;">${solicitud.cargo || 'No especificado'}</span></div>
+                    <div><span class="label">Motivo:</span><br/><span class="valor">${solicitud.motivo}</span></div>
                   </div>
-                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; border-top: 1px solid #e2e8f0; padding-top: 6px;">
-                    <div><strong style="color: #64748b; font-size: 8px;">TIPO:</strong><br/>${solicitud.tipoPermiso}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">DESDE:</strong><br/>${solicitud.fechaInicio || 'N/A'}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">DURACIÓN:</strong><br/>${solicitud.cantidadHoras} hrs</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">ESTADO:</strong><br/>${solicitud.estado}</div>
+                  <div class="grid-4">
+                    <div><span class="label">Tipo:</span><br/><span class="valor">${solicitud.tipoPermiso}</span></div>
+                    <div><span class="label">Desde:</span><br/><span class="valor">${solicitud.fechaInicio || 'N/A'}</span></div>
+                    <div><span class="label">Duración:</span><br/><span class="valor" style="font-weight: bold;">${solicitud.cantidadHoras} hrs</span></div>
+                    <div><span class="label">Estado:</span><br/><span class="valor">${solicitud.estado}</span></div>
                   </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; font-size: 9px; color: #475569; padding-top: 4px;">
+                <div class="grid-3">
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Firma Solicitante</div>
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Jefe Sección / V°B°</div>
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Control Tiempo</div>
@@ -89,36 +164,36 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
               </div>
 
               <!-- COPIA -->
-              <div style="height: 48%; border: 1.5px solid #111827; padding: 14px; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; background: #fff;">
-                <div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 2px solid #111827; padding-bottom: 8px;">
+              <div class="caja-comprobante">
+                <div class="header">
                   <div>
-                    <h1 style="font-size: 13px; font-weight: bold; text-transform: uppercase; margin: 0; color: #111827;">Centro Odontológico Sindicato Nº 1</h1>
-                    <p style="font-size: 9px; color: #4b5563; margin: 2px 0 0 0;">Codelco Chile - Calama</p>
+                    <h1 class="titulo-seccion">Centro Odontológico Sindicato Nº 1</h1>
+                    <p class="sub-titulo">Codelco Chile - Calama</p>
                   </div>
                   <div style="text-align: right;">
-                    <span style="background: #111827; color: #ffffff; padding: 3px 8px; font-size: 8px; font-weight: bold; text-transform: uppercase;">COPIA - FUNCIONARIO</span>
-                    <p style="font-size: 9px; color: #4b5563; margin: 3px 0 0 0;"><strong>Folio ID:</strong> #${solicitud.id}</p>
+                    <span class="badge" style="background: #334155;">COPIA - FUNCIONARIO</span>
+                    <p class="sub-titulo"><strong>Folio ID:</strong> #${solicitud.id}</p>
                   </div>
                 </div>
 
-                <h2 style="text-align: center; font-size: 12px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 4px 0;">Solicitud de Permiso</h2>
+                <h2 style="text-align: center; font-size: 11px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin: 2px 0;">Solicitud de Permiso</h2>
 
-                <div style="border: 1px solid #cbd5e1; background: #f8fafc; padding: 8px; border-radius: 4px; font-size: 10px;">
-                  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 6px;">
-                    <div><strong style="color: #64748b; font-size: 8px;">TRABAJADOR:</strong><br/>${solicitud.nombreTrabajador}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">RUT:</strong><br/>${solicitud.rut}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">JEFE SECCIÓN:</strong><br/>${solicitud.cargo || 'No especificado'}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">MOTIVO:</strong><br/>${solicitud.motivo}</div>
+                <div class="caja-datos">
+                  <div class="grid-2">
+                    <div><span class="label">Trabajador:</span><br/><span class="valor">${solicitud.nombreTrabajador}</span></div>
+                    <div><span class="label">RUT:</span><br/><span class="valor">${solicitud.rut}</span></div>
+                    <div><span class="label">Jefe Sección:</span><br/><span class="valor" style="color: #4338ca;">${solicitud.cargo || 'No especificado'}</span></div>
+                    <div><span class="label">Motivo:</span><br/><span class="valor">${solicitud.motivo}</span></div>
                   </div>
-                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; border-top: 1px solid #e2e8f0; padding-top: 6px;">
-                    <div><strong style="color: #64748b; font-size: 8px;">TIPO:</strong><br/>${solicitud.tipoPermiso}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">DESDE:</strong><br/>${solicitud.fechaInicio || 'N/A'}</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">DURACIÓN:</strong><br/>${solicitud.cantidadHoras} hrs</div>
-                    <div><strong style="color: #64748b; font-size: 8px;">ESTADO:</strong><br/>${solicitud.estado}</div>
+                  <div class="grid-4">
+                    <div><span class="label">Tipo:</span><br/><span class="valor">${solicitud.tipoPermiso}</span></div>
+                    <div><span class="label">Desde:</span><br/><span class="valor">${solicitud.fechaInicio || 'N/A'}</span></div>
+                    <div><span class="label">Duración:</span><br/><span class="valor" style="font-weight: bold;">${solicitud.cantidadHoras} hrs</span></div>
+                    <div><span class="label">Estado:</span><br/><span class="valor">${solicitud.estado}</span></div>
                   </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; font-size: 9px; color: #475569; padding-top: 4px;">
+                <div class="grid-3">
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Firma Solicitante</div>
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Jefe Sección / V°B°</div>
                   <div style="border-top: 1px solid #64748b; padding-top: 2px;">Control Tiempo</div>
@@ -228,7 +303,6 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
 
   return (
     <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      {/* Ventana Flotante / Modal para ver en pantalla */}
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 relative space-y-4 max-h-[95vh] overflow-y-auto">
         
         <div className="sticky top-0 bg-white/95 backdrop-blur z-20 flex justify-between items-center border-b border-slate-200 pb-3 pt-1">
