@@ -11,13 +11,110 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
     window.print();
   };
 
+  // Función reutilizable para renderizar el contenido del comprobante (Original o Copia)
+  const renderContenidoComprobante = (tipo: 'ORIGINAL - CONTROL SINDICATO' | 'COPIA - FUNCIONARIO') => (
+    <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:space-y-1.5 flex flex-col justify-between h-full text-xs">
+      
+      {/* Cabecera institucional */}
+      <div className="flex justify-between items-start border-b-2 border-slate-800 pb-1.5">
+        <div>
+          <h1 className="text-xs font-bold text-slate-900 uppercase">Centro Odontológico Sindicato Nº 1</h1>
+          <p className="text-[9px] text-slate-600">Codelco Chile - Calama</p>
+        </div>
+        <div className="text-right text-xs">
+          <span className="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-0.5">{tipo}</span>
+          <p className="text-slate-500 text-[10px]"><strong>Folio ID:</strong> #{solicitud.id}</p>
+        </div>
+      </div>
+
+      <h2 className="text-center text-xs font-extrabold text-blue-900 uppercase tracking-wide">
+        Solicitud de Permiso
+      </h2>
+
+      {/* Datos del Trabajador */}
+      <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2 rounded border border-slate-200">
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Nombre Trabajador</span>
+          <span className="font-medium text-slate-800">{solicitud.nombreTrabajador}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">RUT</span>
+          <span className="font-medium text-slate-800">{solicitud.rut}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Jefe de Sección</span>
+          <span className="font-medium text-indigo-700">{solicitud.cargo || 'No especificado'}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Motivo</span>
+          <span className="font-medium text-slate-800">{solicitud.motivo}</span>
+        </div>
+      </div>
+
+      {/* Fechas y Tipo */}
+      <div className="grid grid-cols-3 gap-2 text-[11px] bg-slate-50 p-2 rounded border border-slate-200">
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Tipo</span>
+          <span className="font-medium text-slate-800">{solicitud.tipoPermiso}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Desde</span>
+          <span className="font-medium text-slate-800">{solicitud.fechaInicio || 'N/A'}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Hasta</span>
+          <span className="font-medium text-slate-800">{solicitud.fechaFin || solicitud.fechaInicio || 'N/A'}</span>
+        </div>
+      </div>
+
+      {/* Bloque de Horas y Estado */}
+      <div className="grid grid-cols-4 gap-2 text-[11px] bg-blue-50/80 p-2 rounded border border-blue-200">
+        <div>
+          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Salida</span>
+          <span className="font-bold text-blue-900">{solicitud.horaSalida || 'No reg.'}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Regreso</span>
+          <span className="font-bold text-blue-900">{solicitud.horaRegreso || solicitud.horaLlegada || 'No reg.'}</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Duración</span>
+          <span className="font-extrabold text-blue-900">{solicitud.cantidadHoras} hrs</span>
+        </div>
+        <div>
+          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Estado</span>
+          <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold rounded ${
+            solicitud.estado === 'Aprobado' ? 'bg-green-100 text-green-800' :
+            solicitud.estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+          }`}>
+            {solicitud.estado}
+          </span>
+        </div>
+      </div>
+
+      {/* Firmas Oficiales */}
+      <div className="grid grid-cols-3 gap-4 pt-4 text-center text-[10px] text-slate-600">
+        <div className="border-t border-slate-400 pt-1">
+          Firma Solicitante
+        </div>
+        <div className="border-t border-slate-400 pt-1">
+          Jefe Sección / V°B°
+        </div>
+        <div className="border-t border-slate-400 pt-1">
+          Control Tiempo
+        </div>
+      </div>
+
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative space-y-6 max-h-[90vh] overflow-y-auto print:shadow-none print:p-0 print:m-0 print:w-full print:max-h-none print:overflow-visible">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 relative space-y-4 max-h-[95vh] overflow-y-auto print:shadow-none print:p-0 print:m-0 print:w-full print:max-h-none print:overflow-visible">
         
         {/* Botones de acción (No se imprimen) */}
-        <div className="sticky top-0 bg-white/95 backdrop-blur z-20 flex justify-between items-center print:hidden border-b pb-4 pt-1">
-          <h3 className="text-lg font-bold text-slate-800">Comprobante Oficial - Centro Odontológico</h3>
+        <div className="sticky top-0 bg-white/95 backdrop-blur z-20 flex justify-between items-center print:hidden border-b pb-3 pt-1">
+          <h3 className="text-base font-bold text-slate-800">Comprobante Oficial - Centro Odontológico</h3>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -36,105 +133,26 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
           </div>
         </div>
 
-        {/* Estructura Oficial del Comprobante */}
-        <div className="space-y-6 border border-slate-200 p-6 rounded-xl bg-slate-50/50 print:border-none print:p-0">
+        {/* CONTENEDOR PRINCIPAL DE IMPRESIÓN (ID requerido para el CSS global) */}
+        <div id="modal-comprobante-impresion" className="print:h-[100vh] print:flex print:flex-col print:justify-between print:box-border print:p-1 space-y-4">
           
-          {/* Cabecera institucional */}
-          <div className="flex justify-between items-start border-b-2 border-slate-800 pb-3">
-            <div>
-              <h1 className="text-base font-bold text-slate-900 uppercase">Centro Odontológico Sindicato Nº 1</h1>
-              <p className="text-xs text-slate-600">Codelco Chile - Calama</p>
-            </div>
-            <div className="text-right text-xs text-slate-500">
-              <p><strong>Folio ID:</strong> #{solicitud.id}</p>
-            </div>
+          {/* 1. ORIGINAL */}
+          <div className="print:h-[48%] print:overflow-hidden">
+            {renderContenidoComprobante('ORIGINAL - CONTROL SINDICATO')}
           </div>
 
-          <h2 className="text-center text-xl font-extrabold text-blue-900 uppercase tracking-wide">
-            Solicitud de Permiso
-          </h2>
-
-          {/* Datos del Trabajador */}
-          <div className="grid grid-cols-2 gap-4 text-sm bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Nombre Trabajador</span>
-              <span className="font-medium text-slate-800">{solicitud.nombreTrabajador}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">RUT</span>
-              <span className="font-medium text-slate-800">{solicitud.rut}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Jefe de Sección (Aprobador)</span>
-              <span className="font-medium text-indigo-700">{solicitud.cargo || 'No especificado'}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Motivo</span>
-              <span className="font-medium text-slate-800">{solicitud.motivo}</span>
-            </div>
+          {/* Línea de corte punteada visible solo en impresión */}
+          <div className="hidden print:flex items-center justify-center text-slate-400 text-[10px] my-0.5">
+            <span>✂️ ------------------------------------ Cortar aquí ------------------------------------ ✂️</span>
           </div>
 
-          {/* Fechas y Tipo */}
-          <div className="grid grid-cols-3 gap-4 text-sm bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Tipo de Permiso</span>
-              <span className="font-medium text-slate-800">{solicitud.tipoPermiso}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Desde (Fecha)</span>
-              <span className="font-medium text-slate-800">{solicitud.fechaInicio || 'N/A'}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-slate-500 uppercase">Hasta (Fecha)</span>
-              <span className="font-medium text-slate-800">{solicitud.fechaFin || solicitud.fechaInicio || 'N/A'}</span>
-            </div>
-          </div>
-
-          {/* Bloque detallado para Horas (Salida, Llegada y Total) */}
-          <div className="grid grid-cols-3 gap-4 text-sm bg-blue-50/80 p-4 rounded-lg border border-blue-200 shadow-sm">
-            <div>
-              <span className="block text-xs font-semibold text-blue-800 uppercase">Hora Salida</span>
-              <span className="font-bold text-blue-900">{solicitud.horaSalida || 'No registrada'}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-blue-800 uppercase">Hora Regreso</span>
-              <span className="font-bold text-blue-900">{solicitud.horaRegreso || solicitud.horaLlegada || 'No registrada'}</span>
-            </div>
-            <div>
-              <span className="block text-xs font-semibold text-blue-800 uppercase">Duración Total</span>
-              <span className="font-extrabold text-blue-900">{solicitud.cantidadHoras} hrs</span>
-            </div>
-          </div>
-
-          {/* Estado actual */}
-          <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex justify-between items-center">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Estado Actual:</span>
-            <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-              solicitud.estado === 'Aprobado' ? 'bg-green-100 text-green-800' :
-              solicitud.estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
-            }`}>
-              {solicitud.estado}
-            </span>
-          </div>
-
-          {/* Firmas Oficiales */}
-          <div className="grid grid-cols-3 gap-6 pt-14 text-center text-xs text-slate-600">
-            <div className="border-t border-slate-400 pt-2">
-              Firma Solicitante
-            </div>
-            <div className="border-t border-slate-400 pt-2">
-              Jefe Sección / V°B°
-            </div>
-            <div className="border-t border-slate-400 pt-2">
-              Control Tiempo / Empleos
-            </div>
-          </div>
-
-          <div className="text-[10px] text-slate-400 text-center pt-4 border-t">
-            Original blanco: Control Sindicato | Copia color: Trabajador
+          {/* 2. COPIA FUNCIONARIO */}
+          <div className="print:h-[48%] print:overflow-hidden">
+            {renderContenidoComprobante('COPIA - FUNCIONARIO')}
           </div>
 
         </div>
+
       </div>
     </div>
   );

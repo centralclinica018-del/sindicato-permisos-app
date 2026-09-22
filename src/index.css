@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media print {
+  /* Ocultar toda la interfaz de la aplicación al imprimir */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Hacer visible únicamente el contenedor del comprobante y su contenido */
+  #modal-comprobante-impresion, #modal-comprobante-impresion * {
+    visibility: visible;
+  }
+
+  #modal-comprobante-impresion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+  }
+
+  /* Forzar tamaño de página Carta vertical y márgenes mínimos */
+  @page {
+    size: letter portrait;
+    margin: 5mm;
+  }
+}
