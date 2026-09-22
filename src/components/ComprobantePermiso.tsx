@@ -11,79 +11,67 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
     window.print();
   };
 
-  // Función reutilizable para renderizar el contenido del comprobante (Original o Copia)
-  const renderContenidoComprobante = (tipo: 'ORIGINAL - CONTROL SINDICATO' | 'COPIA - FUNCIONARIO') => (
-    <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:space-y-1.5 flex flex-col justify-between h-full text-xs">
+  // Función reutilizable para renderizar cada una de las 3 copias
+  const renderContenidoComprobante = (tipo: 'ORIGINAL - SINDICATO' | 'COPIA - FUNCIONARIO' | 'COPIA - ARCHIVO') => (
+    <div className="space-y-1 bg-white p-2 rounded-lg border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0 print:space-y-1 flex flex-col justify-between h-full text-[10px]">
       
       {/* Cabecera institucional */}
-      <div className="flex justify-between items-start border-b-2 border-slate-800 pb-1.5">
+      <div className="flex justify-between items-start border-b border-slate-800 pb-1">
         <div>
-          <h1 className="text-xs font-bold text-slate-900 uppercase">Centro Odontológico Sindicato Nº 1</h1>
-          <p className="text-[9px] text-slate-600">Codelco Chile - Calama</p>
+          <h1 className="text-[11px] font-bold text-slate-900 uppercase">Centro Odontológico Sindicato Nº 1</h1>
+          <p className="text-[8px] text-slate-600">Codelco Chile - Calama</p>
         </div>
-        <div className="text-right text-xs">
-          <span className="inline-block bg-slate-900 text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-0.5">{tipo}</span>
-          <p className="text-slate-500 text-[10px]"><strong>Folio ID:</strong> #{solicitud.id}</p>
+        <div className="text-right">
+          <span className="inline-block bg-slate-900 text-white px-1.5 py-0.5 rounded text-[8px] font-bold uppercase mb-0.5">{tipo}</span>
+          <p className="text-slate-500 text-[9px]"><strong>Folio:</strong> #{solicitud.id}</p>
         </div>
       </div>
 
-      <h2 className="text-center text-xs font-extrabold text-blue-900 uppercase tracking-wide">
-        Solicitud de Permiso
-      </h2>
-
-      {/* Datos del Trabajador */}
-      <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2 rounded border border-slate-200">
+      {/* Datos del Trabajador en línea compacta */}
+      <div className="grid grid-cols-4 gap-1 bg-slate-50 p-1.5 rounded border border-slate-200">
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Nombre Trabajador</span>
-          <span className="font-medium text-slate-800">{solicitud.nombreTrabajador}</span>
+          <span className="block text-[8px] font-semibold text-slate-500 uppercase">Trabajador</span>
+          <span className="font-medium text-slate-800 truncate block">{solicitud.nombreTrabajador}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">RUT</span>
+          <span className="block text-[8px] font-semibold text-slate-500 uppercase">RUT</span>
           <span className="font-medium text-slate-800">{solicitud.rut}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Jefe de Sección</span>
-          <span className="font-medium text-indigo-700">{solicitud.cargo || 'No especificado'}</span>
+          <span className="block text-[8px] font-semibold text-slate-500 uppercase">Jefe Sección</span>
+          <span className="font-medium text-indigo-700 truncate block">{solicitud.cargo || 'N/A'}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Motivo</span>
-          <span className="font-medium text-slate-800">{solicitud.motivo}</span>
+          <span className="block text-[8px] font-semibold text-slate-500 uppercase">Motivo</span>
+          <span className="font-medium text-slate-800 truncate block">{solicitud.motivo}</span>
         </div>
       </div>
 
-      {/* Fechas y Tipo */}
-      <div className="grid grid-cols-3 gap-2 text-[11px] bg-slate-50 p-2 rounded border border-slate-200">
+      {/* Fechas, Horas y Estado */}
+      <div className="grid grid-cols-6 gap-1 bg-blue-50/80 p-1.5 rounded border border-blue-200">
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Tipo</span>
-          <span className="font-medium text-slate-800">{solicitud.tipoPermiso}</span>
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Tipo</span>
+          <span className="font-medium text-slate-800 truncate block">{solicitud.tipoPermiso}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Desde</span>
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Fecha</span>
           <span className="font-medium text-slate-800">{solicitud.fechaInicio || 'N/A'}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-slate-500 uppercase">Hasta</span>
-          <span className="font-medium text-slate-800">{solicitud.fechaFin || solicitud.fechaInicio || 'N/A'}</span>
-        </div>
-      </div>
-
-      {/* Bloque de Horas y Estado */}
-      <div className="grid grid-cols-4 gap-2 text-[11px] bg-blue-50/80 p-2 rounded border border-blue-200">
-        <div>
-          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Salida</span>
-          <span className="font-bold text-blue-900">{solicitud.horaSalida || 'No reg.'}</span>
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Salida</span>
+          <span className="font-bold text-blue-900">{solicitud.horaSalida || 'N/A'}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Regreso</span>
-          <span className="font-bold text-blue-900">{solicitud.horaRegreso || solicitud.horaLlegada || 'No reg.'}</span>
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Regreso</span>
+          <span className="font-bold text-blue-900">{solicitud.horaRegreso || solicitud.horaLlegada || 'N/A'}</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Duración</span>
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Duración</span>
           <span className="font-extrabold text-blue-900">{solicitud.cantidadHoras} hrs</span>
         </div>
         <div>
-          <span className="block text-[9px] font-semibold text-blue-800 uppercase">Estado</span>
-          <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold rounded ${
+          <span className="block text-[8px] font-semibold text-blue-800 uppercase">Estado</span>
+          <span className={`inline-block px-1 py-0.2 text-[8px] font-bold rounded ${
             solicitud.estado === 'Aprobado' ? 'bg-green-100 text-green-800' :
             solicitud.estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
           }`}>
@@ -92,17 +80,11 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
         </div>
       </div>
 
-      {/* Firmas Oficiales */}
-      <div className="grid grid-cols-3 gap-4 pt-4 text-center text-[10px] text-slate-600">
-        <div className="border-t border-slate-400 pt-1">
-          Firma Solicitante
-        </div>
-        <div className="border-t border-slate-400 pt-1">
-          Jefe Sección / V°B°
-        </div>
-        <div className="border-t border-slate-400 pt-1">
-          Control Tiempo
-        </div>
+      {/* Firmas compactas */}
+      <div className="grid grid-cols-3 gap-3 pt-2 text-center text-[9px] text-slate-600">
+        <div className="border-t border-slate-400 pt-0.5">Firma Solicitante</div>
+        <div className="border-t border-slate-400 pt-0.5">Jefe Sección / V°B°</div>
+        <div className="border-t border-slate-400 pt-0.5">Control Tiempo</div>
       </div>
 
     </div>
@@ -114,7 +96,7 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
         
         {/* Botones de acción (No se imprimen) */}
         <div className="sticky top-0 bg-white/95 backdrop-blur z-20 flex justify-between items-center print:hidden border-b pb-3 pt-1">
-          <h3 className="text-base font-bold text-slate-800">Comprobante Oficial - Centro Odontológico</h3>
+          <h3 className="text-base font-bold text-slate-800">Comprobante Oficial (3 Copias)</h3>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -133,22 +115,32 @@ export const ComprobantePermiso: React.FC<Props> = ({ solicitud, onCerrar }) => 
           </div>
         </div>
 
-        {/* CONTENEDOR PRINCIPAL DE IMPRESIÓN (ID requerido para el CSS global) */}
-        <div id="modal-comprobante-impresion" className="print:h-[100vh] print:flex print:flex-col print:justify-between print:box-border print:p-1 space-y-4">
+        {/* CONTENEDOR PRINCIPAL DE IMPRESIÓN (Distribución exacta para 3 copias en 1 sola hoja) */}
+        <div id="modal-comprobante-impresion" className="print:h-[100vh] print:flex print:flex-col print:justify-between print:box-border print:p-1 space-y-2">
           
           {/* 1. ORIGINAL */}
-          <div className="print:h-[48%] print:overflow-hidden">
-            {renderContenidoComprobante('ORIGINAL - CONTROL SINDICATO')}
+          <div className="print:h-[31%] print:overflow-hidden">
+            {renderContenidoComprobante('ORIGINAL - SINDICATO')}
           </div>
 
-          {/* Línea de corte punteada visible solo en impresión */}
-          <div className="hidden print:flex items-center justify-center text-slate-400 text-[10px] my-0.5">
+          {/* Línea de corte 1 */}
+          <div className="hidden print:flex items-center justify-center text-slate-400 text-[8px] my-0">
             <span>✂️ ------------------------------------ Cortar aquí ------------------------------------ ✂️</span>
           </div>
 
           {/* 2. COPIA FUNCIONARIO */}
-          <div className="print:h-[48%] print:overflow-hidden">
+          <div className="print:h-[31%] print:overflow-hidden">
             {renderContenidoComprobante('COPIA - FUNCIONARIO')}
+          </div>
+
+          {/* Línea de corte 2 */}
+          <div className="hidden print:flex items-center justify-center text-slate-400 text-[8px] my-0">
+            <span>✂️ ------------------------------------ Cortar aquí ------------------------------------ ✂️</span>
+          </div>
+
+          {/* 3. COPIA ARCHIVO */}
+          <div className="print:h-[31%] print:overflow-hidden">
+            {renderContenidoComprobante('COPIA - ARCHIVO')}
           </div>
 
         </div>
