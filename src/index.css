@@ -3,28 +3,28 @@
 @tailwind utilities;
 
 @media print {
-  /* Ocultar toda la interfaz de la aplicación al imprimir */
+  /* Ocultar absolutamente todo el cuerpo del documento */
   body * {
-    visibility: hidden;
-  }
-  
-  /* Hacer visible únicamente el contenedor del comprobante y su contenido */
-  #modal-comprobante-impresion, #modal-comprobante-impresion * {
-    visibility: visible;
+    display: none !important;
   }
 
-  #modal-comprobante-impresion {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
+  /* Mostrar únicamente nuestro contenedor de impresión optimizado */
+  #print-area, #print-area * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  #print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
   }
 
-  /* Forzar tamaño de página Carta vertical y márgenes mínimos */
   @page {
     size: letter portrait;
     margin: 5mm;
