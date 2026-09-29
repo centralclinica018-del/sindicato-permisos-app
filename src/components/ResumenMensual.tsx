@@ -296,3 +296,4 @@ export const ResumenMensual: React.FC<Props> = ({ permisos }) => {
     </div>
   );
 };
+// vvvvvv
