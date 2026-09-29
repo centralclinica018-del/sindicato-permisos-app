@@ -155,7 +155,7 @@ export const ResumenMensual: React.FC<Props> = ({ permisos }) => {
     const headers = [
       'Funcionario', 'RUT', 'Total Permisos', 'Particulares (hrs)', 'Médico (hrs)', 
       'Administrativo (hrs)', 'Conciliación (hrs)', 'Asuntos Familiares (hrs)', 
-      'Gremial (hrs)', 'Otros (hrs)', 'Suma Total (hrs)', 'Horas a Descontar (hrs)'
+      'Gremial (hrs)', 'Otros (hrs)', 'Suma Total (hrs)', 'Horas a Descontar (hrs)', 'Horas a Descontar (min)'
     ];
     
     const rows = datosResumen.map(d => [
@@ -170,7 +170,8 @@ export const ResumenMensual: React.FC<Props> = ({ permisos }) => {
       d.gremial.toFixed(1),
       d.otros.toFixed(1),
       d.totalHoras.toFixed(1),
-      d.horasADescuentar.toFixed(1)
+      d.horasADescuentar.toFixed(1),
+      Math.round(d.horasADescuentar * 60) // <-- Total llevado a minutos redondeado
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + 
@@ -296,4 +297,3 @@ export const ResumenMensual: React.FC<Props> = ({ permisos }) => {
     </div>
   );
 };
-// vvvvvv
