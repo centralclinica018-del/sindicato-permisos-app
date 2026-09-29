@@ -53,53 +53,6 @@ export const HistorialPermisos: React.FC<Props> = ({
       return acc;
     }, 0);
 
-  // Agrupar y desglosar horas por trabajador y por tipo de motivo (solo solicitudes aprobadas)
-  const resumenPorTrabajador = solicitudes
-    .filter((sol) => sol.estado === 'Aprobado')
-    .reduce((acc: { [rut: string]: any }, curr) => {
-      const rut = curr.rut || 'Sin RUT';
-      if (!acc[rut]) {
-        acc[rut] = {
-          nombre: curr.nombreTrabajador,
-          rut: rut,
-          totalPermisos: 0,
-          particulares: 0,
-          medico: 0,
-          administrativo: 0,
-          otros: 0,
-          sumaTotal: 0
-        };
-      }
-
-      acc[rut].totalPermisos += 1;
-
-      // Calcular valor numérico real en horas (1 día = 8.5 hrs)
-      const texto = curr.cantidadHoras.toLowerCase();
-      let horasReales = 0;
-      if (texto.includes('días') || texto.includes('dia') || texto.includes('día')) {
-        const diasNum = parseFloat(texto.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
-        horasReales = diasNum * 8.5;
-      } else {
-        horasReales = parseFloat(texto.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
-      }
-
-      const motivoLower = curr.motivo.toLowerCase();
-      if (motivoLower.includes('particular')) {
-        acc[rut].particulares += horasReales;
-      } else if (motivoLower.includes('médico') || motivoLower.includes('medico')) {
-        acc[rut].medico += horasReales;
-      } else if (motivoLower.includes('administrativo')) {
-        acc[rut].administrativo += horasReales;
-      } else {
-        acc[rut].otros += horasReales;
-      }
-
-      acc[rut].sumaTotal += horasReales;
-      return acc;
-    }, {});
-
-  const listaResumenTrabajadores = Object.values(resumenPorTrabajador);
-
   const handleEliminarClick = (sol: SolicitudPermiso) => {
     const targetId = (sol as any).firebaseId || sol.id;
     if (window.confirm(`¿Estás seguro de que deseas eliminar la solicitud #${sol.id}?`)) {
@@ -275,55 +228,6 @@ export const HistorialPermisos: React.FC<Props> = ({
             )}
           </tbody>
         </table>
-      </div>
-
-      {/* Tabla: Acumulado por Trabajador - Desglose por Tipo de Solicitud */}
-      <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="bg-amber-50/70 px-6 py-3.5 border-b border-slate-200">
-          <h3 className="text-sm font-bold text-slate-800">Acumulado por Trabajador - Desglose por Tipo de Solicitud (1 día = 8.5 hrs)</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left">
-            <thead className="bg-slate-50 text-xs font-semibold text-slate-600 uppercase">
-              <tr>
-                <th className="px-6 py-3">Funcionario</th>
-                <th className="px-6 py-3">RUT</th>
-                <th className="px-6 py-3 text-center">Total Permisos</th>
-                <th className="px-6 py-3 text-center">Particulares</th>
-                <th className="px-6 py-3 text-center">Médico</th>
-                <th className="px-6 py-3 text-center">Administrativo</th>
-                <th className="px-6 py-3 text-center">Otros</th>
-                <th className="px-6 py-3 text-right">Suma Total</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-200 text-sm">
-              {listaResumenTrabajadores.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-6 text-center text-slate-500">
-                    No hay registros aprobados para generar el desglose por trabajador.
-                  </td>
-                </tr>
-              ) : (
-                listaResumenTrabajadores.map((item: any, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3.5 font-semibold text-slate-900">{item.nombre}</td>
-                    <td className="px-6 py-3.5 text-slate-500">{item.rut}</td>
-                    <td className="px-6 py-3.5 text-center">
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">
-                        {item.totalPermisos}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-center text-slate-700">{item.particulares > 0 ? `${item.particulares.toFixed(1)} hrs` : '-'}</td>
-                    <td className="px-6 py-3.5 text-center text-slate-700">{item.medico > 0 ? `${item.medico.toFixed(1)} hrs` : '-'}</td>
-                    <td className="px-6 py-3.5 text-center text-slate-700">{item.administrativo > 0 ? `${item.administrativo.toFixed(1)} hrs` : '-'}</td>
-                    <td className="px-6 py-3.5 text-center text-slate-700">{item.otros > 0 ? `${item.otros.toFixed(1)} hrs` : '-'}</td>
-                    <td className="px-6 py-3.5 text-right font-bold text-slate-900">{item.sumaTotal.toFixed(1)} hrs</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
       </div>
 
     </div>
