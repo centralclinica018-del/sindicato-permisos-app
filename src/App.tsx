@@ -10,6 +10,7 @@ import { ResumenMensual } from './components/ResumenMensual';
 import { GestionNomina } from './components/GestionNomina';
 import { GestionUsuarios } from './components/GestionUsuarios';
 import { GestionAutorizados } from './components/GestionAutorizados';
+import { ReporteRemuneraciones } from './components/ReporteRemuneraciones'; // <-- Importado el nuevo componente
 import { Login } from './components/Login';
 
 // Interfaz local si no está en types.ts
@@ -31,7 +32,7 @@ export function App() {
   const [autorizados, setAutorizados] = useState<Autorizado[]>([]);
   
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudPermiso | null>(null);
-  const [vistaActiva, setVistaActiva] = useState<'gestion' | 'resumen' | 'nomina' | 'usuarios' | 'autorizados'>('gestion');
+  const [vistaActiva, setVistaActiva] = useState<'gestion' | 'resumen' | 'nomina' | 'autorizados' | 'remuneraciones' | 'usuarios'>('gestion');
   const [mostrarAlertaConciliacion, setMostrarAlertaConciliacion] = useState(true);
 
   useEffect(() => {
@@ -126,22 +127,17 @@ export function App() {
 
     const reiniciarTemporizador = () => {
       clearTimeout(timeoutId);
-      // 1 hora = 60 minutos * 60 segundos * 1000 milisegundos
       timeoutId = setTimeout(cerrarPorInactividad, 60 * 60 * 1000);
     };
 
-    // Lista de eventos que indican actividad del usuario
     const eventos = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
 
-    // Registrar los eventos en el navegador
     eventos.forEach(evento => {
       window.addEventListener(evento, reiniciarTemporizador);
     });
 
-    // Iniciar el temporizador por primera vez al cargar
     reiniciarTemporizador();
 
-    // Limpieza al desmontar el componente o cerrar sesión
     return () => {
       clearTimeout(timeoutId);
       eventos.forEach(evento => {
@@ -158,7 +154,7 @@ export function App() {
 
   const cerrarSesion = () => {
     setUsuarioLogueado(null);
-    sessionStorage.removeItem('sindicato_sesion_activa'); // Limpieza explícita al cerrar sesión manualmente
+    sessionStorage.removeItem('sindicato_sesion_activa');
   };
 
   const anioActual = new Date().getFullYear();
@@ -479,6 +475,17 @@ export function App() {
             >
               📊 Resumen Mensual por Horas
             </button>
+
+            {/* NUEVA PESTAÑA: Corte de Remuneraciones */}
+            <button
+              onClick={() => setVistaActiva('remuneraciones')}
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm transition ${
+                vistaActiva === 'remuneraciones' ? 'bg-[#8B5A2B] text-white shadow' : 'text-[#5C4033] hover:bg-[#EBE5D8]'
+              }`}
+            >
+              💰 Corte Remuneraciones
+            </button>
+
             {rolUsuario !== 'visualizador' && (
               <>
                 <button
@@ -541,6 +548,8 @@ export function App() {
             </div>
           ) : vistaActiva === 'resumen' ? (
             <ResumenMensual permisos={solicitudes} />
+          ) : vistaActiva === 'remuneraciones' ? (
+            <ReporteRemuneraciones solicitudes={solicitudes} />
           ) : vistaActiva === 'nomina' ? (
             <GestionNomina
               nomina={nomina}
