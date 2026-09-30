@@ -112,6 +112,44 @@ export function App() {
     }
   }, [usuarioLogueado]);
 
+  // Cierre de sesión automático por inactividad (1 hora)
+  useEffect(() => {
+    if (!usuarioLogueado) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const cerrarPorInactividad = () => {
+      alert('⚠ Tu sesión ha expirado por inactividad (1 hora sin uso).');
+      setUsuarioLogueado(null);
+      sessionStorage.removeItem('sindicato_sesion_activa');
+    };
+
+    const reiniciarTemporizador = () => {
+      clearTimeout(timeoutId);
+      // 1 hora = 60 minutos * 60 segundos * 1000 milisegundos
+      timeoutId = setTimeout(cerrarPorInactividad, 60 * 60 * 1000);
+    };
+
+    // Lista de eventos que indican actividad del usuario
+    const eventos = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+    // Registrar los eventos en el navegador
+    eventos.forEach(evento => {
+      window.addEventListener(evento, reiniciarTemporizador);
+    });
+
+    // Iniciar el temporizador por primera vez al cargar
+    reiniciarTemporizador();
+
+    // Limpieza al desmontar el componente o cerrar sesión
+    return () => {
+      clearTimeout(timeoutId);
+      eventos.forEach(evento => {
+        window.removeEventListener(evento, reiniciarTemporizador);
+      });
+    };
+  }, [usuarioLogueado]);
+
   if (!usuarioLogueado) {
     return <Login usuarios={usuarios} onIniciarSesion={setUsuarioLogueado} />;
   }
@@ -217,7 +255,6 @@ export function App() {
   };
 
   const cambiarEstado = async (solicitudItem: any, nuevoEstado: EstadoPermiso) => {
-    // Restricción aplicada: Ni visualizador ni digitador pueden cambiar estados
     if (rolUsuario === 'visualizador' || rolUsuario === 'digitador') {
       alert('⚠️ Tu rol actual no tiene permisos para cambiar el estado de las solicitudes.');
       return;
@@ -233,7 +270,6 @@ export function App() {
   };
 
   const eliminarSolicitud = async (solicitudItem: any) => {
-    // Restricción aplicada: Solo admin y superadmin pueden eliminar registros
     if (rolUsuario !== 'admin' && rolUsuario !== 'superadmin') {
       alert('⚠️ Solo los administradores pueden eliminar registros.');
       return;
@@ -257,7 +293,7 @@ export function App() {
     }
     const rutLimpio = nuevo.rut.trim().toUpperCase();
     if (nomina.some(t => t.rut.trim().toUpperCase() === rutLimpio)) {
-      alert(`⚠️ El trabajador con RUT ${nuevo.rut} ya se encuentra registrado.`);
+      alert(`⚠️️ El trabajador con RUT ${nuevo.rut} ya se encuentra registrado.`);
       return;
     }
     try {
@@ -271,7 +307,7 @@ export function App() {
 
   const eliminarTrabajadorNomina = async (id: string) => {
     if (rolUsuario !== 'admin' && rolUsuario !== 'superadmin') {
-      alert('⚠️ Solo los administradores pueden eliminar trabajadores.');
+      alert('⚠️️ Solo los administradores pueden eliminar trabajadores.');
       return;
     }
     try {
@@ -515,7 +551,7 @@ export function App() {
           ) : vistaActiva === 'autorizados' && rolUsuario !== 'visualizador' ? (
             <GestionAutorizados
               autorizados={autorizados}
-              onAgregarAutorizado={agregarAutorizado}
+              onAgregarAutorizado={autorizado => agregarAutorizado(autorizado.nombre)}
               onEliminarAutorizado={eliminarAutorizado}
             />
           ) : rolUsuario === 'superadmin' && vistaActiva === 'usuarios' ? (
