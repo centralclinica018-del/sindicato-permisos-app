@@ -6,6 +6,7 @@ interface Props {
   onCambiarEstado: (id: string, nuevoEstado: EstadoPermiso) => void;
   onEliminar: (id: string) => void;
   onVerComprobante: (solicitud: SolicitudPermiso) => void;
+  rolUsuario?: string; // <-- Prop opcional para validar el rol
 }
 
 export const HistorialPermisos: React.FC<Props> = ({
@@ -13,17 +14,50 @@ export const HistorialPermisos: React.FC<Props> = ({
   onCambiarEstado,
   onEliminar,
   onVerComprobante,
+  rolUsuario = '',
 }) => {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
   const [filtroMotivo, setFiltroMotivo] = useState<string>('TODOS');
+  const [filtroAnio, setFiltroAnio] = useState<string>('TODOS');
+  const [filtroMes, setFiltroMes] = useState<string>('TODOS');
+
+  // Validaciones de roles
+  const rolLimpio = rolUsuario.toLowerCase();
+  const esVisualizador = rolLimpio === 'visualizador';
+  const esDigitador = rolLimpio === 'digitador';
+  const puedeEliminar = rolLimpio === 'admin' || rolLimpio === 'superadmin';
 
   // Obtener una lista única de motivos existentes en las solicitudes para el filtro
   const motivosDisponibles = Array.from(
     new Set(solicitudes.map((sol) => sol.motivo.split(' - ')[0]))
   ).filter(Boolean);
 
-  // Filtrar solicitudes combinando la búsqueda general y los filtros por columna
+  // Obtener años únicos basados en las fechas de inicio de las solicitudes
+  const aniosDisponibles = Array.from(
+    new Set(solicitudes.map((sol) => {
+      if (!sol.fechaInicio) return '';
+      return new Date(sol.fechaInicio).getFullYear().toString();
+    }))
+  ).filter(Boolean).sort((a, b) => b.localeCompare(a)); // Orden descendente
+
+  // Meses disponibles para el selector
+  const mesesDisponibles = [
+    { id: '01', nombre: 'Enero' },
+    { id: '02', nombre: 'Febrero' },
+    { id: '03', nombre: 'Marzo' },
+    { id: '04', nombre: 'Abril' },
+    { id: '05', nombre: 'Mayo' },
+    { id: '06', nombre: 'Junio' },
+    { id: '07', nombre: 'Julio' },
+    { id: '08', nombre: 'Agosto' },
+    { id: '09', nombre: 'Septiembre' },
+    { id: '10', nombre: 'Octubre' },
+    { id: '11', nombre: 'Noviembre' },
+    { id: '12', nombre: 'Diciembre' },
+  ];
+
+  // Filtrar solicitudes combinando la búsqueda general y los filtros por columna (Estado, Motivo, Año y Mes)
   const solicitudesFiltradas = solicitudes.filter((sol) => {
     const coincideTexto =
       sol.id.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -33,11 +67,34 @@ export const HistorialPermisos: React.FC<Props> = ({
     const coincideEstado = filtroEstado === 'TODOS' || sol.estado === filtroEstado;
     const coincideMotivo = filtroMotivo === 'TODOS' || sol.motivo.toLowerCase().includes(filtroMotivo.toLowerCase());
 
-    return coincideTexto && coincideEstado && coincideMotivo;
+    // Validación de Año y Mes basado en fechaInicio
+    let coincideAnio = true;
+    let coincideMes = true;
+
+    if (sol.fechaInicio) {
+      const fechaSol = new Date(sol.fechaInicio);
+      const anioSol = fechaSol.getFullYear().toString();
+      // getMonth() devuelve 0-11, por lo que sumamos 1 y formateamos con padStart
+      const mesSol = String(fechaSol.getMonth() + 1).padStart(2, '0');
+
+      if (filtroAnio !== 'TODOS' && anioSol !== filtroAnio) {
+        coincideAnio = false;
+      }
+      if (filtroMes !== 'TODOS' && mesSol !== filtroMes) {
+        coincideMes = false;
+      }
+    } else {
+      if (filtroAnio !== 'TODOS' || filtroMes !== 'TODOS') {
+        coincideAnio = false;
+        coincideMes = false;
+      }
+    }
+
+    return coincideTexto && coincideEstado && coincideMotivo && coincideAnio && coincideMes;
   });
 
-  // Calcular total de horas acumuladas (Horas y Días convertidos a 8.5 hrs)
-  const totalHorasAprobadas = solicitudes
+  // Calcular total de horas acumuladas (Horas y Días convertidos a 8.5 hrs) según los filtros actuales
+  const totalHorasAprobadas = solicitudesFiltradas
     .filter((sol) => sol.estado === 'Aprobado')
     .reduce((acc, sol) => {
       const texto = sol.cantidadHoras.toLowerCase();
@@ -54,6 +111,7 @@ export const HistorialPermisos: React.FC<Props> = ({
     }, 0);
 
   const handleEliminarClick = (sol: SolicitudPermiso) => {
+    if (!puedeEliminar) return; // Bloqueo preventivo de seguridad
     const targetId = (sol as any).firebaseId || sol.id;
     if (window.confirm(`¿Estás seguro de que deseas eliminar la solicitud #${sol.id}?`)) {
       onEliminar(targetId);
@@ -61,6 +119,7 @@ export const HistorialPermisos: React.FC<Props> = ({
   };
 
   const handleCambiarEstadoClick = (sol: SolicitudPermiso, nuevoEstado: EstadoPermiso) => {
+    if (esVisualizador || esDigitador) return; // Bloqueo preventivo de seguridad
     const targetId = (sol as any).firebaseId || sol.id;
     onCambiarEstado(targetId, nuevoEstado);
   };
@@ -72,7 +131,13 @@ export const HistorialPermisos: React.FC<Props> = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Historial e Informes de Permisos</h2>
-          <p className="text-sm text-slate-500 mt-0.5">Revisa, aprueba o gestiona los permisos solicitados.</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            {esVisualizador 
+              ? 'Modo de consulta (Visualizador).' 
+              : esDigitador 
+              ? 'Modo de registro (Digitador).' 
+              : 'Revisa, aprueba o gestiona los permisos solicitados.'}
+          </p>
         </div>
 
         <div className="w-full md:w-72">
@@ -86,8 +151,8 @@ export const HistorialPermisos: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Barra de Filtros por Columna */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+      {/* Barra de Filtros por Columna (Estado, Motivo, Año y Mes) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
         <div>
           <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Filtrar por Estado</label>
           <select
@@ -117,16 +182,48 @@ export const HistorialPermisos: React.FC<Props> = ({
             ))}
           </select>
         </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Filtrar por Año</label>
+          <select
+            value={filtroAnio}
+            onChange={(e) => setFiltroAnio(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="TODOS">Todos los años</option>
+            {aniosDisponibles.map((anio) => (
+              <option key={anio} value={anio}>
+                {anio}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Filtrar por Mes</label>
+          <select
+            value={filtroMes}
+            onChange={(e) => setFiltroMes(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="TODOS">Todos los meses</option>
+            {mesesDisponibles.map((mes) => (
+              <option key={mes.id} value={mes.id}>
+                {mes.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Tarjetas de Resumen */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
-          <span className="text-xs font-semibold text-blue-900 uppercase tracking-wider">Total Solicitudes Registradas</span>
-          <div className="text-3xl font-extrabold text-slate-800">{solicitudes.length}</div>
+          <span className="text-xs font-semibold text-blue-900 uppercase tracking-wider">Total Solicitudes Filtradas</span>
+          <div className="text-3xl font-extrabold text-slate-800">{solicitudesFiltradas.length}</div>
         </div>
         <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200 space-y-1">
-          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Total Horas Acumuladas (Incluye Días a 8.5h)</span>
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Total Horas Aprobadas (Filtro Actual)</span>
           <div className="text-3xl font-extrabold text-emerald-700">{totalHorasAprobadas.toFixed(1)} hrs</div>
         </div>
       </div>
@@ -195,32 +292,42 @@ export const HistorialPermisos: React.FC<Props> = ({
                       >
                         📄 PDF
                       </button>
-                      {sol.estado !== 'Aprobado' && (
+
+                      {/* Si NO es visualizador ni digitador, mostramos botones de cambiar estado */}
+                      {!esVisualizador && !esDigitador && (
+                        <>
+                          {sol.estado !== 'Aprobado' && (
+                            <button
+                              type="button"
+                              onClick={() => handleCambiarEstadoClick(sol, 'Aprobado')}
+                              className="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-xs font-medium transition cursor-pointer"
+                            >
+                              Aprobar
+                            </button>
+                          )}
+                          {sol.estado !== 'Rechazado' && (
+                            <button
+                              type="button"
+                              onClick={() => handleCambiarEstadoClick(sol, 'Rechazado')}
+                              className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded text-xs font-medium transition cursor-pointer"
+                            >
+                              Rechazar
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      {/* Botón de eliminar exclusivo para admin y superadmin */}
+                      {puedeEliminar && (
                         <button
                           type="button"
-                          onClick={() => handleCambiarEstadoClick(sol, 'Aprobado')}
-                          className="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-xs font-medium transition cursor-pointer"
+                          onClick={() => handleEliminarClick(sol)}
+                          className="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-medium transition cursor-pointer"
+                          title="Eliminar solicitud"
                         >
-                          Aprobar
+                          🗑️
                         </button>
                       )}
-                      {sol.estado !== 'Rechazado' && (
-                        <button
-                          type="button"
-                          onClick={() => handleCambiarEstadoClick(sol, 'Rechazado')}
-                          className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded text-xs font-medium transition cursor-pointer"
-                        >
-                          Rechazar
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleEliminarClick(sol)}
-                        className="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-medium transition cursor-pointer"
-                        title="Eliminar solicitud"
-                      >
-                        🗑️
-                      </button>
                     </div>
                   </td>
                 </tr>

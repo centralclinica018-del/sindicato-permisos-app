@@ -9,7 +9,7 @@ import { ComprobantePermiso } from './components/ComprobantePermiso';
 import { ResumenMensual } from './components/ResumenMensual';
 import { GestionNomina } from './components/GestionNomina';
 import { GestionUsuarios } from './components/GestionUsuarios';
-import { GestionAutorizados } from './components/GestionAutorizados'; // <-- Nuevo componente de gestión
+import { GestionAutorizados } from './components/GestionAutorizados';
 import { Login } from './components/Login';
 
 // Interfaz local si no está en types.ts
@@ -27,7 +27,7 @@ export function App() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudPermiso[]>([]);
   const [nomina, setNomina] = useState<TrabajadorNomina[]>([]);
-  const [autorizados, setAutorizados] = useState<Autorizado[]>([]); // <-- Estado para autorizados
+  const [autorizados, setAutorizados] = useState<Autorizado[]>([]);
   
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudPermiso | null>(null);
   const [vistaActiva, setVistaActiva] = useState<'gestion' | 'resumen' | 'nomina' | 'usuarios' | 'autorizados'>('gestion');
@@ -79,7 +79,6 @@ export function App() {
       }
     });
 
-    // --- SINCRONIZACIÓN DE AUTORIZADOS EN FIREBASE ---
     const unsubAutorizados = onSnapshot(collection(db, 'autorizados'), (snapshot) => {
       const listaAutorizados: Autorizado[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Autorizado));
       if (listaAutorizados.length === 0) {
@@ -161,7 +160,6 @@ export function App() {
         return mismoTrabajador && esDelAnio && motivoSol.includes('conciliaci');
       });
 
-      // Calcular horas ya usadas sumando registros anteriores de forma dinámica
       const horasYaUsadas = solicitudesAnioColaborador.reduce((acc, sol) => {
         const cantidadStr = String((sol as any).cantidadHoras || '');
         if (cantidadStr.includes('día')) {
@@ -173,12 +171,10 @@ export function App() {
         }
       }, 0);
 
-      // Calcular horas del nuevo permiso que se quiere agregar
       const cantidadStrNueva = String((nueva as any).cantidadHoras || '');
       let horasNuevas = 8.5;
       if (cantidadStrNueva.includes('día')) {
         const diasNuevos = parseFloat(cantidadStrNueva) || 1;
-        // RESTRICCIÓN CORREGIDA: Permite hasta 2 días (17 horas) en una sola solicitud
         if (diasNuevos > 2) {
           alert('❌ Error: Las solicitudes bajo el motivo "Conciliación" no pueden exceder de 2 días en total por solicitud.');
           return;
@@ -218,6 +214,7 @@ export function App() {
   };
 
   const cambiarEstado = async (solicitudItem: any, nuevoEstado: EstadoPermiso) => {
+    // Restricción aplicada: Ni visualizador ni digitador pueden cambiar estados
     if (rolUsuario === 'visualizador' || rolUsuario === 'digitador') {
       alert('⚠️ Tu rol actual no tiene permisos para cambiar el estado de las solicitudes.');
       return;
@@ -233,6 +230,7 @@ export function App() {
   };
 
   const eliminarSolicitud = async (solicitudItem: any) => {
+    // Restricción aplicada: Solo admin y superadmin pueden eliminar registros
     if (rolUsuario !== 'admin' && rolUsuario !== 'superadmin') {
       alert('⚠️ Solo los administradores pueden eliminar registros.');
       return;
@@ -296,7 +294,6 @@ export function App() {
     alert(`Carga masiva completada en la nube. Se omitieron ${duplicadosCount} duplicados.`);
   };
 
-  // --- FUNCIONES PARA GESTIÓN DE AUTORIZADOS ---
   const agregarAutorizado = async (nombre: string) => {
     if (rolUsuario === 'visualizador') {
       alert('⚠️ Los visualizadores no pueden modificar los autorizados.');
@@ -500,6 +497,7 @@ export function App() {
                   eliminarSolicitud(encontrada || id);
                 }}
                 onVerComprobante={(sol) => setSolicitudSeleccionada(sol)}
+                rolUsuario={rolUsuario}
               />
             </div>
           ) : vistaActiva === 'resumen' ? (
