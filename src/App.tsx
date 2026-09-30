@@ -19,8 +19,9 @@ export interface Autorizado {
 }
 
 export function App() {
+  // Modificado: Usamos sessionStorage en lugar de localStorage para que la sesión expire al cerrar la pestaña
   const [usuarioLogueado, setUsuarioLogueado] = useState<Usuario | null>(() => {
-    const saved = localStorage.getItem('sindicato_sesion_activa');
+    const saved = sessionStorage.getItem('sindicato_sesion_activa');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -102,11 +103,12 @@ export function App() {
     };
   }, []);
 
+  // Modificado: Guardamos y eliminamos también utilizando sessionStorage
   useEffect(() => {
     if (usuarioLogueado) {
-      localStorage.setItem('sindicato_sesion_activa', JSON.stringify(usuarioLogueado));
+      sessionStorage.setItem('sindicato_sesion_activa', JSON.stringify(usuarioLogueado));
     } else {
-      localStorage.removeItem('sindicato_sesion_activa');
+      sessionStorage.removeItem('sindicato_sesion_activa');
     }
   }, [usuarioLogueado]);
 
@@ -118,6 +120,7 @@ export function App() {
 
   const cerrarSesion = () => {
     setUsuarioLogueado(null);
+    sessionStorage.removeItem('sindicato_sesion_activa'); // Limpieza explícita al cerrar sesión manualmente
   };
 
   const anioActual = new Date().getFullYear();
