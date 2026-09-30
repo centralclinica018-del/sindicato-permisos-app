@@ -16,7 +16,9 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
   const [nombreTrabajador, setNombreTrabajador] = useState('');
   const [rut, setRut] = useState('');
   const [motivo, setMotivo] = useState('Particulares');
-  const [tipoPermiso, setTipoPermiso] = useState<'Por Horas' | 'Por Dias'>('Por Horas');
+  
+  // Modificado: Ahora el tipo de permiso contempla 'Media Jornada' además de horas y días
+  const [tipoPermiso, setTipoPermiso] = useState<'Por Horas' | 'Media Jornada' | 'Por Dias'>('Por Horas');
   
   const [cantidadHoras, setCantidadHoras] = useState('2');
   const [cantidadDias, setCantidadDias] = useState('1');
@@ -57,6 +59,7 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
     const fInicio = fechaInicio || new Date().toISOString().split('T')[0];
     const fFin = fechaFin || fInicio;
     const esPorDias = tipoPermiso === 'Por Dias';
+    const esMediaJornada = tipoPermiso === 'Media Jornada';
 
     if (esPorDias) {
       // VALIDACIÓN CORREGIDA: Conciliación puede ser de hasta 2 días completos
@@ -86,6 +89,15 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
           return;
         }
       }
+    } else if (esMediaJornada) {
+      // Validación opcional para Media Jornada si requiere horas de salida/regreso opcionales
+      if (fechaFin && fechaFin !== fInicio) {
+        // Asegurar que si es media jornada, sea dentro del mismo día por regla general
+        const confirmar = window.confirm('La media jornada suele registrarse para un solo día. ¿Desea fijar la fecha "Hasta" igual a la fecha "Desde"?');
+        if (confirmar) {
+          setFechaFin(fInicio);
+        }
+      }
     } else {
       // VALIDACIÓN ESTRICTA PARA HORAS
       if (!horaSalida || !horaRegreso) {
@@ -106,7 +118,7 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
         return;
       }
 
-      const horasCalculadas = Number((diferenciaMinutos / 60).toFixed(1));
+      const horasCalculadas = Number((diferenciaMinutos / 60).toFixed(2));
       const horasIngresadas = Number(cantidadHoras.replace(',', '.'));
 
       // Verificar si hay discrepancia entre el horario ingresado y las horas declaradas
@@ -122,17 +134,23 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
       }
     }
 
-    const totalCalculado = esPorDias 
-      ? `${cantidadDias} día(s)` 
-      : `${cantidadHoras.replace(',', '.')} hrs`;
+    // Definir la cantidad de texto resultante según la selección
+    let totalCalculado = '';
+    if (esPorDias) {
+      totalCalculado = `${cantidadDias} día(s)`;
+    } else if (esMediaJornada) {
+      totalCalculado = '4.25 hrs'; // Equivale a 4 horas y 15 minutos
+    } else {
+      totalCalculado = `${cantidadHoras.replace(',', '.')} hrs`;
+    }
 
     onAgregarSolicitud({
       nombreTrabajador: nombreTrabajador.toUpperCase(),
       rut,
       cargo: autorizadoPor,
-      tipoPermiso: esPorDias ? 'Administrativo (Días)' : 'Administrativo (Horas)',
+      tipoPermiso: esPorDias ? 'Administrativo (Días)' : esMediaJornada ? 'Administrativo (Media Jornada)' : 'Administrativo (Horas)',
       fechaInicio: fInicio,
-      fechaFin: fFin,
+      fechaFin: esMediaJornada ? fInicio : fFin,
       cantidadHoras: totalCalculado,
       horaSalida: esPorDias ? '' : horaSalida,
       horaRegreso: esPorDias ? '' : horaRegreso,
@@ -217,6 +235,7 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="Por Horas">Por Horas</option>
+              <option value="Media Jornada">Media Jornada (4,25 hrs / 4h 15m)</option>
               <option value="Por Dias">Por Días</option>
             </select>
           </div>
@@ -257,6 +276,11 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
               />
             </div>
           </div>
+        ) : tipoPermiso === 'Media Jornada' ? (
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-center justify-between text-sm text-blue-900">
+            <span>⏱️ Has seleccionado <b>Media Jornada</b>. Se computarán automáticamente <b>4,25 horas</b> (4 horas y 15 minutos).</span>
+            <span className="font-bold bg-white px-3 py-1 rounded shadow-xs border border-blue-200">4.25 hrs</span>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -296,8 +320,11 @@ export const FormularioPermiso: React.FC<Props> = ({ onAgregarSolicitud, nominaP
             <input
               type="date"
               value={fechaFin}
+              disabled={tipoPermiso === 'Media Jornada'}
               onChange={(e) => setFechaFin(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                tipoPermiso === 'Media Jornada' ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''
+              }`}
             />
           </div>
 

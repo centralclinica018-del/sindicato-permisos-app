@@ -293,7 +293,7 @@ export function App() {
     }
     const rutLimpio = nuevo.rut.trim().toUpperCase();
     if (nomina.some(t => t.rut.trim().toUpperCase() === rutLimpio)) {
-      alert(`⚠️️ El trabajador con RUT ${nuevo.rut} ya se encuentra registrado.`);
+      alert(`⚠ El trabajador con RUT ${nuevo.rut} ya se encuentra registrado.`);
       return;
     }
     try {
@@ -307,7 +307,7 @@ export function App() {
 
   const eliminarTrabajadorNomina = async (id: string) => {
     if (rolUsuario !== 'admin' && rolUsuario !== 'superadmin') {
-      alert('⚠️️ Solo los administradores pueden eliminar trabajadores.');
+      alert('⚠ Solo los administradores pueden eliminar trabajadores.');
       return;
     }
     try {
