@@ -329,17 +329,29 @@ export function App() {
     alert(`Carga masiva completada en la nube. Se omitieron ${duplicadosCount} duplicados.`);
   };
 
-  const agregarAutorizado = async (nombre: string) => {
+  const agregarAutorizado = async (autorizadoParam: string | { nombre: string }) => {
     if (rolUsuario === 'visualizador') {
       alert('⚠️ Los visualizadores no pueden modificar los autorizados.');
       return;
     }
+
+    const nombreInput = typeof autorizadoParam === 'object' && autorizadoParam !== null
+      ? autorizadoParam.nombre
+      : autorizadoParam;
+
+    const nombreLimpio = (nombreInput || '').trim();
+    if (!nombreLimpio) {
+      alert('⚠️ El nombre del funcionario autorizado no puede estar vacío.');
+      return;
+    }
+
     try {
       const idUnico = Date.now().toString();
-      await setDoc(doc(db, 'autorizados', idUnico), { id: idUnico, nombre });
+      await setDoc(doc(db, 'autorizados', idUnico), { id: idUnico, nombre: nombreLimpio });
       alert('¡Funcionario autorizado agregado con éxito!');
     } catch (error) {
       console.error("Error al agregar autorizado:", error);
+      alert('Hubo un error al guardar en Firebase.');
     }
   };
 
@@ -560,7 +572,7 @@ export function App() {
           ) : vistaActiva === 'autorizados' && rolUsuario !== 'visualizador' ? (
             <GestionAutorizados
               autorizados={autorizados}
-              onAgregarAutorizado={autorizado => agregarAutorizado(autorizado.nombre)}
+              onAgregarAutorizado={agregarAutorizado}
               onEliminarAutorizado={eliminarAutorizado}
             />
           ) : rolUsuario === 'superadmin' && vistaActiva === 'usuarios' ? (
